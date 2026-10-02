@@ -1,0 +1,423 @@
+table ip filter { # handle 1
+	chain ufw-before-logging-input { # handle 37
+		ct state new limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT] " # handle 321
+	}
+
+	chain ufw-before-logging-output { # handle 38
+		ct state new limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT] " # handle 322
+	}
+
+	chain ufw-before-logging-forward { # handle 39
+		ct state new limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT] " # handle 323
+	}
+
+	chain ufw-before-input { # handle 40
+		iifname "lo" counter packets 0 bytes 0 accept # handle 247
+		ct state related,established counter packets 0 bytes 0 accept # handle 249
+		ct state invalid counter packets 0 bytes 0 jump ufw-logging-deny # handle 252
+		ct state invalid counter packets 0 bytes 0 drop # handle 253
+		ip protocol icmp icmp type destination-unreachable counter packets 0 bytes 0 accept # handle 254
+		ip protocol icmp icmp type time-exceeded counter packets 0 bytes 0 accept # handle 255
+		ip protocol icmp icmp type parameter-problem counter packets 0 bytes 0 accept # handle 256
+		ip protocol icmp icmp type echo-request counter packets 0 bytes 0 accept # handle 257
+		udp sport 67 udp dport 68 counter packets 0 bytes 0 accept # handle 262
+		counter packets 0 bytes 0 jump ufw-not-local # handle 263
+		ip daddr 224.0.0.251 udp dport 5353 counter packets 0 bytes 0 accept # handle 269
+		ip daddr 239.255.255.250 udp dport 1900 counter packets 0 bytes 0 accept # handle 270
+		counter packets 0 bytes 0 jump ufw-user-input # handle 309
+	}
+
+	chain ufw-before-output { # handle 41
+		oifname "lo" counter packets 0 bytes 0 accept # handle 248
+		ct state related,established counter packets 0 bytes 0 accept # handle 250
+		counter packets 0 bytes 0 jump ufw-user-output # handle 310
+	}
+
+	chain ufw-before-forward { # handle 42
+		ct state related,established counter packets 0 bytes 0 accept # handle 251
+		ip protocol icmp icmp type destination-unreachable counter packets 0 bytes 0 accept # handle 258
+		ip protocol icmp icmp type time-exceeded counter packets 0 bytes 0 accept # handle 259
+		ip protocol icmp icmp type parameter-problem counter packets 0 bytes 0 accept # handle 260
+		ip protocol icmp icmp type echo-request counter packets 0 bytes 0 accept # handle 261
+		counter packets 0 bytes 0 jump ufw-user-forward # handle 311
+	}
+
+	chain ufw-after-input { # handle 43
+		udp dport 137 counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 271
+		udp dport 138 counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 272
+		tcp dport 139 counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 273
+		tcp dport 445 counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 274
+		udp dport 67 counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 275
+		udp dport 68 counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 276
+		fib daddr type broadcast counter packets 0 bytes 0 jump ufw-skip-to-policy-input # handle 277
+	}
+
+	chain ufw-after-output { # handle 44
+	}
+
+	chain ufw-after-forward { # handle 45
+	}
+
+	chain ufw-after-logging-input { # handle 46
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW BLOCK] " # handle 315
+	}
+
+	chain ufw-after-logging-output { # handle 47
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW ALLOW] " # handle 316
+	}
+
+	chain ufw-after-logging-forward { # handle 48
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW BLOCK] " # handle 317
+	}
+
+	chain ufw-reject-input { # handle 49
+	}
+
+	chain ufw-reject-output { # handle 50
+	}
+
+	chain ufw-reject-forward { # handle 51
+	}
+
+	chain ufw-track-input { # handle 52
+	}
+
+	chain ufw-track-output { # handle 53
+		ip protocol tcp ct state new counter packets 0 bytes 0 accept # handle 236
+		ip protocol udp ct state new counter packets 0 bytes 0 accept # handle 237
+	}
+
+	chain ufw-track-forward { # handle 54
+	}
+
+	chain INPUT { # handle 55
+		type filter hook input priority filter; policy drop;
+		counter packets 0 bytes 0 jump ufw-before-logging-input # handle 56
+		counter packets 0 bytes 0 jump ufw-before-input # handle 57
+		counter packets 0 bytes 0 jump ufw-after-input # handle 58
+		counter packets 0 bytes 0 jump ufw-after-logging-input # handle 59
+		counter packets 0 bytes 0 jump ufw-reject-input # handle 60
+		counter packets 0 bytes 0 jump ufw-track-input # handle 61
+	}
+
+	chain OUTPUT { # handle 62
+		type filter hook output priority filter; policy accept;
+		counter packets 0 bytes 0 jump ufw-before-logging-output # handle 63
+		counter packets 0 bytes 0 jump ufw-before-output # handle 64
+		counter packets 0 bytes 0 jump ufw-after-output # handle 65
+		counter packets 0 bytes 0 jump ufw-after-logging-output # handle 66
+		counter packets 0 bytes 0 jump ufw-reject-output # handle 67
+		counter packets 0 bytes 0 jump ufw-track-output # handle 68
+	}
+
+	chain FORWARD { # handle 69
+		type filter hook forward priority filter; policy drop;
+		counter packets 0 bytes 0 jump ufw-before-logging-forward # handle 70
+		counter packets 0 bytes 0 jump ufw-before-forward # handle 71
+		counter packets 0 bytes 0 jump ufw-after-forward # handle 72
+		counter packets 0 bytes 0 jump ufw-after-logging-forward # handle 73
+		counter packets 0 bytes 0 jump ufw-reject-forward # handle 74
+		counter packets 0 bytes 0 jump ufw-track-forward # handle 75
+	}
+
+	chain ufw-logging-deny { # handle 238
+		ct state invalid limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT INVALID] " # handle 318
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW BLOCK] " # handle 319
+	}
+
+	chain ufw-logging-allow { # handle 239
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW ALLOW] " # handle 320
+	}
+
+	chain ufw-skip-to-policy-input { # handle 240
+		counter packets 0 bytes 0 drop # handle 243
+	}
+
+	chain ufw-skip-to-policy-output { # handle 241
+		counter packets 0 bytes 0 accept # handle 244
+	}
+
+	chain ufw-skip-to-policy-forward { # handle 242
+		counter packets 0 bytes 0 drop # handle 245
+	}
+
+	chain ufw-not-local { # handle 246
+		fib daddr type local counter packets 0 bytes 0 return # handle 264
+		fib daddr type multicast counter packets 0 bytes 0 return # handle 265
+		fib daddr type broadcast counter packets 0 bytes 0 return # handle 266
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 jump ufw-logging-deny # handle 267
+		counter packets 0 bytes 0 drop # handle 268
+	}
+
+	chain ufw-user-input { # handle 278
+		ip saddr 198.51.100.8 tcp dport 22 counter packets 0 bytes 0 reject with tcp reset # handle 286
+		ip saddr 198.51.100.7 counter packets 0 bytes 0 drop # handle 287
+		tcp dport 22 counter packets 0 bytes 0 accept # handle 288
+		tcp dport 53 counter packets 0 bytes 0 accept # handle 289
+		udp dport 53 counter packets 0 bytes 0 accept # handle 290
+		ip saddr 10.0.0.0/8 ip protocol tcp tcp dport 6000-6007 counter packets 0 bytes 0 accept # handle 291
+		iifname "eth0" counter packets 0 bytes 0 accept # handle 292
+		ip daddr 192.168.1.10 iifname "eth0" tcp dport 443 counter packets 0 bytes 0 accept # handle 293
+		tcp dport 22  counter packets 0 bytes 0 accept # handle 294
+		ip protocol tcp tcp dport { 80, 443 } counter packets 0 bytes 0 accept # handle 296
+	}
+
+	chain ufw-user-output { # handle 279
+		ip daddr 8.8.8.8 udp dport 53 counter packets 0 bytes 0 accept # handle 295
+	}
+
+	chain ufw-user-forward { # handle 280
+	}
+
+	chain ufw-user-logging-input { # handle 281
+	}
+
+	chain ufw-user-logging-output { # handle 282
+	}
+
+	chain ufw-user-logging-forward { # handle 283
+	}
+
+	chain ufw-user-limit { # handle 284
+		limit rate 3/minute burst 5 packets counter packets 0 bytes 0 log prefix "[UFW LIMIT BLOCK] " # handle 324
+		counter packets 0 bytes 0 reject # handle 307
+	}
+
+	chain ufw-user-limit-accept { # handle 285
+		counter packets 0 bytes 0 accept # handle 308
+	}
+}
+table ip6 filter { # handle 2
+	chain ufw6-before-logging-input { # handle 37
+		ct state new limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT] " # handle 339
+	}
+
+	chain ufw6-before-logging-output { # handle 38
+		ct state new limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT] " # handle 340
+	}
+
+	chain ufw6-before-logging-forward { # handle 39
+		ct state new limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT] " # handle 341
+	}
+
+	chain ufw6-before-input { # handle 40
+		iifname "lo" counter packets 0 bytes 0 accept # handle 230
+		rt type 0 counter packets 0 bytes 0 drop # handle 232
+		ct state related,established counter packets 0 bytes 0 accept # handle 235
+		meta l4proto ipv6-icmp icmpv6 type echo-reply counter packets 0 bytes 0 accept # handle 238
+		ct state invalid counter packets 0 bytes 0 jump ufw6-logging-deny # handle 239
+		ct state invalid counter packets 0 bytes 0 drop # handle 240
+		meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter packets 0 bytes 0 accept # handle 241
+		meta l4proto ipv6-icmp icmpv6 type packet-too-big counter packets 0 bytes 0 accept # handle 242
+		meta l4proto ipv6-icmp icmpv6 type time-exceeded counter packets 0 bytes 0 accept # handle 243
+		meta l4proto ipv6-icmp icmpv6 type parameter-problem counter packets 0 bytes 0 accept # handle 244
+		meta l4proto ipv6-icmp icmpv6 type echo-request counter packets 0 bytes 0 accept # handle 245
+		meta l4proto ipv6-icmp icmpv6 type nd-router-solicit ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 246
+		meta l4proto ipv6-icmp icmpv6 type nd-router-advert ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 247
+		meta l4proto ipv6-icmp icmpv6 type nd-neighbor-solicit ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 248
+		meta l4proto ipv6-icmp icmpv6 type nd-neighbor-advert ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 249
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 250
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 251
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp icmpv6 type mld-listener-query counter packets 0 bytes 0 accept # handle 252
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp icmpv6 type mld-listener-report counter packets 0 bytes 0 accept # handle 253
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp icmpv6 type mld-listener-done counter packets 0 bytes 0 accept # handle 254
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" counter packets 0 bytes 0 accept # handle 255
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 256
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 257
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 1 counter packets 0 bytes 0 accept # handle 258
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 1 counter packets 0 bytes 0 accept # handle 259
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 1 counter packets 0 bytes 0 accept # handle 260
+		meta l4proto ipv6-icmp xt match "icmp6" counter packets 0 bytes 0 accept # handle 288
+		meta l4proto ipv6-icmp xt match "icmp6" counter packets 0 bytes 0 accept # handle 289
+		meta l4proto ipv6-icmp xt match "icmp6" counter packets 0 bytes 0 accept # handle 290
+		meta l4proto ipv6-icmp xt match "icmp6" counter packets 0 bytes 0 accept # handle 291
+		ip6 saddr fe80::/10 ip6 daddr fe80::/10 udp sport 547 udp dport 546 counter packets 0 bytes 0 accept # handle 292
+		ip6 daddr ff02::fb udp dport 5353 counter packets 0 bytes 0 accept # handle 293
+		ip6 daddr ff02::f udp dport 1900 counter packets 0 bytes 0 accept # handle 294
+		counter packets 0 bytes 0 jump ufw6-user-input # handle 327
+	}
+
+	chain ufw6-before-output { # handle 41
+		oifname "lo" counter packets 0 bytes 0 accept # handle 231
+		rt type 0 counter packets 0 bytes 0 drop # handle 234
+		ct state related,established counter packets 0 bytes 0 accept # handle 236
+		meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter packets 0 bytes 0 accept # handle 261
+		meta l4proto ipv6-icmp icmpv6 type packet-too-big counter packets 0 bytes 0 accept # handle 262
+		meta l4proto ipv6-icmp icmpv6 type time-exceeded counter packets 0 bytes 0 accept # handle 263
+		meta l4proto ipv6-icmp icmpv6 type parameter-problem counter packets 0 bytes 0 accept # handle 264
+		meta l4proto ipv6-icmp icmpv6 type echo-request counter packets 0 bytes 0 accept # handle 265
+		meta l4proto ipv6-icmp icmpv6 type echo-reply counter packets 0 bytes 0 accept # handle 266
+		meta l4proto ipv6-icmp icmpv6 type nd-router-solicit ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 267
+		meta l4proto ipv6-icmp icmpv6 type nd-neighbor-advert ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 268
+		meta l4proto ipv6-icmp icmpv6 type nd-neighbor-solicit ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 269
+		meta l4proto ipv6-icmp icmpv6 type nd-router-advert ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 270
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 271
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 272
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp icmpv6 type mld-listener-query counter packets 0 bytes 0 accept # handle 273
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp icmpv6 type mld-listener-report counter packets 0 bytes 0 accept # handle 274
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp icmpv6 type mld-listener-done counter packets 0 bytes 0 accept # handle 275
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" counter packets 0 bytes 0 accept # handle 276
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 277
+		meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 255 counter packets 0 bytes 0 accept # handle 278
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 1 counter packets 0 bytes 0 accept # handle 279
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 1 counter packets 0 bytes 0 accept # handle 280
+		ip6 saddr fe80::/10 meta l4proto ipv6-icmp xt match "icmp6" ip6 hoplimit 1 counter packets 0 bytes 0 accept # handle 281
+		counter packets 0 bytes 0 jump ufw6-user-output # handle 328
+	}
+
+	chain ufw6-before-forward { # handle 42
+		rt type 0 counter packets 0 bytes 0 drop # handle 233
+		ct state related,established counter packets 0 bytes 0 accept # handle 237
+		meta l4proto ipv6-icmp icmpv6 type destination-unreachable counter packets 0 bytes 0 accept # handle 282
+		meta l4proto ipv6-icmp icmpv6 type packet-too-big counter packets 0 bytes 0 accept # handle 283
+		meta l4proto ipv6-icmp icmpv6 type time-exceeded counter packets 0 bytes 0 accept # handle 284
+		meta l4proto ipv6-icmp icmpv6 type parameter-problem counter packets 0 bytes 0 accept # handle 285
+		meta l4proto ipv6-icmp icmpv6 type echo-request counter packets 0 bytes 0 accept # handle 286
+		meta l4proto ipv6-icmp icmpv6 type echo-reply counter packets 0 bytes 0 accept # handle 287
+		counter packets 0 bytes 0 jump ufw6-user-forward # handle 329
+	}
+
+	chain ufw6-after-input { # handle 43
+		udp dport 137 counter packets 0 bytes 0 jump ufw6-skip-to-policy-input # handle 295
+		udp dport 138 counter packets 0 bytes 0 jump ufw6-skip-to-policy-input # handle 296
+		tcp dport 139 counter packets 0 bytes 0 jump ufw6-skip-to-policy-input # handle 297
+		tcp dport 445 counter packets 0 bytes 0 jump ufw6-skip-to-policy-input # handle 298
+		udp dport 546 counter packets 0 bytes 0 jump ufw6-skip-to-policy-input # handle 299
+		udp dport 547 counter packets 0 bytes 0 jump ufw6-skip-to-policy-input # handle 300
+	}
+
+	chain ufw6-after-output { # handle 44
+	}
+
+	chain ufw6-after-forward { # handle 45
+	}
+
+	chain ufw6-after-logging-input { # handle 46
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW BLOCK] " # handle 333
+	}
+
+	chain ufw6-after-logging-output { # handle 47
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW ALLOW] " # handle 334
+	}
+
+	chain ufw6-after-logging-forward { # handle 48
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW BLOCK] " # handle 335
+	}
+
+	chain ufw6-reject-input { # handle 49
+	}
+
+	chain ufw6-reject-output { # handle 50
+	}
+
+	chain ufw6-reject-forward { # handle 51
+	}
+
+	chain ufw6-track-input { # handle 52
+	}
+
+	chain ufw6-track-output { # handle 53
+		meta l4proto tcp ct state new counter packets 0 bytes 0 accept # handle 220
+		meta l4proto udp ct state new counter packets 0 bytes 0 accept # handle 221
+	}
+
+	chain ufw6-track-forward { # handle 54
+	}
+
+	chain INPUT { # handle 55
+		type filter hook input priority filter; policy drop;
+		counter packets 0 bytes 0 jump ufw6-before-logging-input # handle 56
+		counter packets 0 bytes 0 jump ufw6-before-input # handle 57
+		counter packets 0 bytes 0 jump ufw6-after-input # handle 58
+		counter packets 0 bytes 0 jump ufw6-after-logging-input # handle 59
+		counter packets 0 bytes 0 jump ufw6-reject-input # handle 60
+		counter packets 0 bytes 0 jump ufw6-track-input # handle 61
+	}
+
+	chain OUTPUT { # handle 62
+		type filter hook output priority filter; policy accept;
+		counter packets 0 bytes 0 jump ufw6-before-logging-output # handle 63
+		counter packets 0 bytes 0 jump ufw6-before-output # handle 64
+		counter packets 0 bytes 0 jump ufw6-after-output # handle 65
+		counter packets 0 bytes 0 jump ufw6-after-logging-output # handle 66
+		counter packets 0 bytes 0 jump ufw6-reject-output # handle 67
+		counter packets 0 bytes 0 jump ufw6-track-output # handle 68
+	}
+
+	chain FORWARD { # handle 69
+		type filter hook forward priority filter; policy drop;
+		counter packets 0 bytes 0 jump ufw6-before-logging-forward # handle 70
+		counter packets 0 bytes 0 jump ufw6-before-forward # handle 71
+		counter packets 0 bytes 0 jump ufw6-after-forward # handle 72
+		counter packets 0 bytes 0 jump ufw6-after-logging-forward # handle 73
+		counter packets 0 bytes 0 jump ufw6-reject-forward # handle 74
+		counter packets 0 bytes 0 jump ufw6-track-forward # handle 75
+	}
+
+	chain ufw6-logging-deny { # handle 222
+		ct state invalid limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW AUDIT INVALID] " # handle 336
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW BLOCK] " # handle 337
+	}
+
+	chain ufw6-logging-allow { # handle 223
+		limit rate 3/minute burst 10 packets counter packets 0 bytes 0 log prefix "[UFW ALLOW] " # handle 338
+	}
+
+	chain ufw6-skip-to-policy-input { # handle 224
+		counter packets 0 bytes 0 drop # handle 227
+	}
+
+	chain ufw6-skip-to-policy-output { # handle 225
+		counter packets 0 bytes 0 accept # handle 228
+	}
+
+	chain ufw6-skip-to-policy-forward { # handle 226
+		counter packets 0 bytes 0 drop # handle 229
+	}
+
+	chain ufw6-user-input { # handle 301
+		tcp dport 22 counter packets 0 bytes 0 accept # handle 309
+		tcp dport 53 counter packets 0 bytes 0 accept # handle 310
+		udp dport 53 counter packets 0 bytes 0 accept # handle 311
+		iifname "eth0" counter packets 0 bytes 0 accept # handle 312
+		tcp dport 22  counter packets 0 bytes 0 accept # handle 313
+		meta l4proto tcp tcp dport { 80, 443 } counter packets 0 bytes 0 accept # handle 314
+	}
+
+	chain ufw6-user-output { # handle 302
+	}
+
+	chain ufw6-user-forward { # handle 303
+	}
+
+	chain ufw6-user-logging-input { # handle 304
+	}
+
+	chain ufw6-user-logging-output { # handle 305
+	}
+
+	chain ufw6-user-logging-forward { # handle 306
+	}
+
+	chain ufw6-user-limit { # handle 307
+		limit rate 3/minute burst 5 packets counter packets 0 bytes 0 log prefix "[UFW LIMIT BLOCK] " # handle 342
+		counter packets 0 bytes 0 reject # handle 325
+	}
+
+	chain ufw6-user-limit-accept { # handle 308
+		counter packets 0 bytes 0 accept # handle 326
+	}
+}
+table inet filter2 { # handle 3
+	chain input { # handle 1
+		type filter hook input priority filter; policy drop;
+		iifname "lo" accept # handle 6
+		tcp dport 22 accept comment "ssh" # handle 3
+		ip saddr 203.0.113.0/24 tcp dport { 80, 443, 6000-6007 } counter packets 0 bytes 0 drop # handle 5
+		meta l4proto { tcp, udp } th dport 53 accept # handle 8
+		ip6 saddr 2001:db8::/32 reject with icmpv6 port-unreachable # handle 10
+	}
+
+	chain blocklist { # handle 2
+	}
+}

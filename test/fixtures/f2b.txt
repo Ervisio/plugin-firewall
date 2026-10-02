@@ -1,0 +1,21 @@
+@@VERSION Fail2Ban v1.0.2
+@@JAIL recidive
+Status for the jail: recidive
+|- Filter
+|  |- Currently failed:	0
+|  |- Total failed:	0
+|  `- Journal matches:	_SYSTEMD_UNIT=fail2ban.service PRIORITY=5
+`- Actions
+   |- Currently banned:	0
+   |- Total banned:	0
+   `- Banned IP list:	
+@@JAIL sshd
+Status for the jail: sshd
+|- Filter
+|  |- Currently failed:	0
+|  |- Total failed:	0
+|  `- File list:	/var/log/auth.log
+`- Actions
+   |- Currently banned:	2
+   |- Total banned:	2
+   `- Banned IP list:	192.0.2.50 2001:db8::5

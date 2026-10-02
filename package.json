@@ -1,0 +1,26 @@
+{
+  "name": "ervisio-plugin-firewall",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ervisio/plugin-firewall.git"
+  },
+  "scripts": {
+    "manifest": "node scripts/gen-manifest.mjs",
+    "build": "node scripts/gen-manifest.mjs --check && tsc --noEmit && vite build && ervisio-plugin-pack copy",
+    "dev": "ervisio-plugin-pack copy && vite build --watch",
+    "pack": "ervisio-plugin-pack pack",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@ervisio/plugin-sdk": "github:Ervisio/plugin-sdk#v0.2.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^18.3.31",
+    "typescript": "^6.0.3",
+    "vite": "^8.3.2"
+  }
+}

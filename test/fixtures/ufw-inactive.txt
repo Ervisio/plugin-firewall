@@ -1,0 +1,25 @@
+@@VERSION
+ufw 0.36.2
+@@VERBOSE
+Status: inactive
+@@NUMBERED
+Status: inactive
+@@ADDED
+Added user rules (see 'ufw status' for running firewall):
+ufw reject from 198.51.100.8 to any port 22 proto tcp comment 'reject ssh'
+ufw deny from 198.51.100.7 comment 'blocked first'
+ufw allow 22/tcp comment 'SSH'
+ufw allow 53 comment 'DNS'
+ufw allow from 10.0.0.0/8 to any port 6000:6007 proto tcp comment 'X11 range'
+ufw allow in on eth0 comment 'on eth0'
+ufw allow in on eth0 to 192.168.1.10 port 443 proto tcp comment 'https eth0'
+ufw allow OpenSSH comment 'app profile'
+ufw allow out to 8.8.8.8 port 53 proto udp comment 'out dns'
+ufw allow 80,443/tcp comment 'Città web'
+@@CONF
+ENABLED=no
+LOGLEVEL=medium
+IPV6=yes
+DEFAULT_INPUT_POLICY="DROP"
+DEFAULT_OUTPUT_POLICY="ACCEPT"
+DEFAULT_FORWARD_POLICY="DROP"

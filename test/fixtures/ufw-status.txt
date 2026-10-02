@@ -1,0 +1,67 @@
+@@VERSION
+ufw 0.36.2
+@@VERBOSE
+Status: active
+Logging: on (medium)
+Default: deny (incoming), allow (outgoing), deny (routed)
+New profiles: skip
+
+To                         Action      From
+--                         ------      ----
+22/tcp                     REJECT IN   198.51.100.8               # reject ssh
+Anywhere                   DENY IN     198.51.100.7               # blocked first
+22/tcp                     ALLOW IN    Anywhere                   # SSH
+53                         ALLOW IN    Anywhere                   # DNS
+6000:6007/tcp              ALLOW IN    10.0.0.0/8                 # X11 range
+Anywhere                   DENY IN     203.0.113.4                # bad host
+Anywhere on eth0           ALLOW IN    Anywhere                   # on eth0
+192.168.1.10 443/tcp on eth0 ALLOW IN    Anywhere                   # https eth0
+22/tcp (OpenSSH)           ALLOW IN    Anywhere                   # app profile
+80,443/tcp                 ALLOW IN    Anywhere                   # Città web
+22/tcp (v6)                ALLOW IN    Anywhere (v6)              # SSH
+53 (v6)                    ALLOW IN    Anywhere (v6)              # DNS
+Anywhere (v6) on eth0      ALLOW IN    Anywhere (v6)              # on eth0
+22/tcp (OpenSSH (v6))      ALLOW IN    Anywhere (v6)              # app profile
+80,443/tcp (v6)            ALLOW IN    Anywhere (v6)              # Città web
+
+8.8.8.8 53/udp             ALLOW OUT   Anywhere                   # out dns
+
+@@NUMBERED
+Status: active
+
+     To                         Action      From
+     --                         ------      ----
+[ 1] 22/tcp                     REJECT IN   198.51.100.8               # reject ssh
+[ 2] Anywhere                   DENY IN     198.51.100.7               # blocked first
+[ 3] 22/tcp                     ALLOW IN    Anywhere                   # SSH
+[ 4] 53                         ALLOW IN    Anywhere                   # DNS
+[ 5] 6000:6007/tcp              ALLOW IN    10.0.0.0/8                 # X11 range
+[ 6] Anywhere                   DENY IN     203.0.113.4                # bad host
+[ 7] Anywhere on eth0           ALLOW IN    Anywhere                   # on eth0
+[ 8] 192.168.1.10 443/tcp on eth0 ALLOW IN    Anywhere                   # https eth0
+[ 9] OpenSSH                    ALLOW IN    Anywhere                   # app profile
+[10] 8.8.8.8 53/udp             ALLOW OUT   Anywhere                   (out) # out dns
+[11] 80,443/tcp                 ALLOW IN    Anywhere                   # Città web
+[12] 22/tcp (v6)                ALLOW IN    Anywhere (v6)              # SSH
+[13] 53 (v6)                    ALLOW IN    Anywhere (v6)              # DNS
+[14] Anywhere (v6) on eth0      ALLOW IN    Anywhere (v6)              # on eth0
+[15] OpenSSH (v6)               ALLOW IN    Anywhere (v6)              # app profile
+[16] 80,443/tcp (v6)            ALLOW IN    Anywhere (v6)              # Città web
+
+@@ADDED
+Added user rules (see 'ufw status' for running firewall):
+ufw reject from 198.51.100.8 to any port 22 proto tcp comment 'reject ssh'
+ufw deny from 198.51.100.7 comment 'blocked first'
+ufw allow 22/tcp comment 'SSH'
+ufw allow 53 comment 'DNS'
+ufw allow from 10.0.0.0/8 to any port 6000:6007 proto tcp comment 'X11 range'
+ufw deny from 203.0.113.4 comment 'bad host'
+ufw allow in on eth0 comment 'on eth0'
+ufw allow in on eth0 to 192.168.1.10 port 443 proto tcp comment 'https eth0'
+ufw allow OpenSSH comment 'app profile'
+ufw allow out to 8.8.8.8 port 53 proto udp comment 'out dns'
+ufw allow 80,443/tcp comment 'Città web'
+@@CONF
+ENABLED=yes
+LOGLEVEL=medium
+IPV6=yes

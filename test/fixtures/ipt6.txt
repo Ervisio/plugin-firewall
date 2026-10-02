@@ -1,0 +1,218 @@
+Chain INPUT (policy DROP 0 packets, 0 bytes)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     17   --  *      *       2001:db8::/32        ::/0                 multiport dports 53 /* dns6 */
+2           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 /* icmp6 */
+3           0        0 ufw6-before-logging-input  0    --  *      *       ::/0                 ::/0                
+4           0        0 ufw6-before-input  0    --  *      *       ::/0                 ::/0                
+5           0        0 ufw6-after-input  0    --  *      *       ::/0                 ::/0                
+6           0        0 ufw6-after-logging-input  0    --  *      *       ::/0                 ::/0                
+7           0        0 ufw6-reject-input  0    --  *      *       ::/0                 ::/0                
+8           0        0 ufw6-track-input  0    --  *      *       ::/0                 ::/0                
+
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ufw6-before-logging-forward  0    --  *      *       ::/0                 ::/0                
+2           0        0 ufw6-before-forward  0    --  *      *       ::/0                 ::/0                
+3           0        0 ufw6-after-forward  0    --  *      *       ::/0                 ::/0                
+4           0        0 ufw6-after-logging-forward  0    --  *      *       ::/0                 ::/0                
+5           0        0 ufw6-reject-forward  0    --  *      *       ::/0                 ::/0                
+6           0        0 ufw6-track-forward  0    --  *      *       ::/0                 ::/0                
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ufw6-before-logging-output  0    --  *      *       ::/0                 ::/0                
+2           0        0 ufw6-before-output  0    --  *      *       ::/0                 ::/0                
+3           0        0 ufw6-after-output  0    --  *      *       ::/0                 ::/0                
+4           0        0 ufw6-after-logging-output  0    --  *      *       ::/0                 ::/0                
+5           0        0 ufw6-reject-output  0    --  *      *       ::/0                 ::/0                
+6           0        0 ufw6-track-output  0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-after-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-after-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ufw6-skip-to-policy-input  17   --  *      *       ::/0                 ::/0                 udp dpt:137
+2           0        0 ufw6-skip-to-policy-input  17   --  *      *       ::/0                 ::/0                 udp dpt:138
+3           0        0 ufw6-skip-to-policy-input  6    --  *      *       ::/0                 ::/0                 tcp dpt:139
+4           0        0 ufw6-skip-to-policy-input  6    --  *      *       ::/0                 ::/0                 tcp dpt:445
+5           0        0 ufw6-skip-to-policy-input  17   --  *      *       ::/0                 ::/0                 udp dpt:546
+6           0        0 ufw6-skip-to-policy-input  17   --  *      *       ::/0                 ::/0                 udp dpt:547
+
+Chain ufw6-after-logging-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW BLOCK] "
+
+Chain ufw6-after-logging-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW BLOCK] "
+
+Chain ufw6-after-logging-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW ALLOW] "
+
+Chain ufw6-after-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-before-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 DROP       0    --  *      *       ::/0                 ::/0                 rt type:0
+2           0        0 ACCEPT     0    --  *      *       ::/0                 ::/0                 ctstate RELATED,ESTABLISHED
+3           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 1
+4           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 2
+5           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 3
+6           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 4
+7           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 128
+8           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 129
+9           0        0 ufw6-user-forward  0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-before-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     0    --  lo     *       ::/0                 ::/0                
+2           0        0 DROP       0    --  *      *       ::/0                 ::/0                 rt type:0
+3           0        0 ACCEPT     0    --  *      *       ::/0                 ::/0                 ctstate RELATED,ESTABLISHED
+4           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 129
+5           0        0 ufw6-logging-deny  0    --  *      *       ::/0                 ::/0                 ctstate INVALID
+6           0        0 DROP       0    --  *      *       ::/0                 ::/0                 ctstate INVALID
+7           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 1
+8           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 2
+9           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 3
+10          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 4
+11          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 128
+12          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 133 HL match HL == 255
+13          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 134 HL match HL == 255
+14          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 135 HL match HL == 255
+15          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 136 HL match HL == 255
+16          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 141 HL match HL == 255
+17          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 142 HL match HL == 255
+18          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 130
+19          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 131
+20          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 132
+21          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 143
+22          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 148 HL match HL == 255
+23          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 149 HL match HL == 255
+24          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 151 HL match HL == 1
+25          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 152 HL match HL == 1
+26          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 153 HL match HL == 1
+27          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 144
+28          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 145
+29          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 146
+30          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 147
+31          0        0 ACCEPT     17   --  *      *       fe80::/10            fe80::/10            udp spt:547 dpt:546
+32          0        0 ACCEPT     17   --  *      *       ::/0                 ff02::fb             udp dpt:5353
+33          0        0 ACCEPT     17   --  *      *       ::/0                 ff02::f              udp dpt:1900
+34          0        0 ufw6-user-input  0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-before-logging-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 ctstate NEW limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW AUDIT] "
+
+Chain ufw6-before-logging-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 ctstate NEW limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW AUDIT] "
+
+Chain ufw6-before-logging-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 ctstate NEW limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW AUDIT] "
+
+Chain ufw6-before-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     0    --  *      lo      ::/0                 ::/0                
+2           0        0 DROP       0    --  *      *       ::/0                 ::/0                 rt type:0
+3           0        0 ACCEPT     0    --  *      *       ::/0                 ::/0                 ctstate RELATED,ESTABLISHED
+4           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 1
+5           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 2
+6           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 3
+7           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 4
+8           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 128
+9           0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 129
+10          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 133 HL match HL == 255
+11          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 136 HL match HL == 255
+12          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 135 HL match HL == 255
+13          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 134 HL match HL == 255
+14          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 141 HL match HL == 255
+15          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 142 HL match HL == 255
+16          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 130
+17          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 131
+18          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 132
+19          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 143
+20          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 148 HL match HL == 255
+21          0        0 ACCEPT     58   --  *      *       ::/0                 ::/0                 ipv6-icmptype 149 HL match HL == 255
+22          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 151 HL match HL == 1
+23          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 152 HL match HL == 1
+24          0        0 ACCEPT     58   --  *      *       fe80::/10            ::/0                 ipv6-icmptype 153 HL match HL == 1
+25          0        0 ufw6-user-output  0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-logging-allow (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW ALLOW] "
+
+Chain ufw6-logging-deny (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 ctstate INVALID limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW AUDIT INVALID] "
+2           0        0 LOG        0    --  *      *       ::/0                 ::/0                 limit: avg 3/min burst 10 LOG flags 0 level 4 prefix "[UFW BLOCK] "
+
+Chain ufw6-reject-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-reject-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-reject-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-skip-to-policy-forward (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 DROP       0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-skip-to-policy-input (6 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 DROP       0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-skip-to-policy-output (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-track-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-track-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-track-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     6    --  *      *       ::/0                 ::/0                 ctstate NEW
+2           0        0 ACCEPT     17   --  *      *       ::/0                 ::/0                 ctstate NEW
+
+Chain ufw6-user-forward (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-user-input (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     6    --  *      *       ::/0                 ::/0                 tcp dpt:22
+2           0        0 ACCEPT     6    --  *      *       ::/0                 ::/0                 tcp dpt:53
+3           0        0 ACCEPT     17   --  *      *       ::/0                 ::/0                 udp dpt:53
+4           0        0 ACCEPT     0    --  eth0   *       ::/0                 ::/0                
+5           0        0 ACCEPT     6    --  *      *       ::/0                 ::/0                 tcp dpt:22 /* 'dapp_OpenSSH' */
+6           0        0 ACCEPT     6    --  *      *       ::/0                 ::/0                 multiport dports 80,443
+
+Chain ufw6-user-limit (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 LOG        0    --  *      *       ::/0                 ::/0                 limit: avg 3/min burst 5 LOG flags 0 level 4 prefix "[UFW LIMIT BLOCK] "
+2           0        0 REJECT     0    --  *      *       ::/0                 ::/0                 reject-with icmp6-port-unreachable
+
+Chain ufw6-user-limit-accept (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+1           0        0 ACCEPT     0    --  *      *       ::/0                 ::/0                
+
+Chain ufw6-user-logging-forward (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-user-logging-input (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-user-logging-output (0 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
+
+Chain ufw6-user-output (1 references)
+num      pkts      bytes target     prot opt in     out     source               destination         
