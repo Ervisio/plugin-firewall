@@ -14,7 +14,9 @@
     "dev": "ervisio-plugin-pack copy && vite build --watch",
     "pack": "ervisio-plugin-pack pack",
     "typecheck": "tsc --noEmit",
-    "test": "node --test \"test/**/*.test.ts\""
+    "test": "node --test \"test/**/*.test.ts\"",
+    "release": "node .github/release.mjs",
+    "marketplace": "node .github/release.mjs register"
   },
   "devDependencies": {
     "@ervisio/plugin-sdk": "github:Ervisio/plugin-sdk#v0.2.0",
